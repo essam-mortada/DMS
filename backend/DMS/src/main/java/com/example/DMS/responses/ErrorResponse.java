@@ -1,16 +1,16 @@
 package com.example.DMS.responses;
 
+import java.util.List;
+
 public class ErrorResponse {
     private final int status;
     private final String error;
-    private final String message;
-    private final long timestamp;
+    private List<String> messages;
 
-    public ErrorResponse(int status, String error, String message, long timestamp) {
+    public ErrorResponse(int status, String error, List<String> messages, long timestamp) {
         this.status = status;
         this.error = error;
-        this.message = message;
-        this.timestamp = timestamp;
+        this.messages = messages;
     }
 
     // Getters
@@ -22,11 +22,8 @@ public class ErrorResponse {
         return error;
     }
 
-    public String getMessage() {
-        return message;
+    public List<String> getMessage() {
+        return messages;
     }
 
-    public long getTimestamp() {
-        return timestamp;
-    }
 }

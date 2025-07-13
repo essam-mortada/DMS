@@ -1,5 +1,6 @@
 package com.example.DMS.config;
 
+import com.example.DMS.mappers.UserMapper;
 import com.example.DMS.models.User;
 import com.example.DMS.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/api/document/**").permitAll()
+                        .requestMatchers("/api/workspaces/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
@@ -64,6 +67,12 @@ public class SecurityConfig {
                     user.getAuthorities()
             );
         };
+    }
+
+    @Bean
+    public UserMapper userMapper() {
+        return new UserMapper();
+
     }
 }
 

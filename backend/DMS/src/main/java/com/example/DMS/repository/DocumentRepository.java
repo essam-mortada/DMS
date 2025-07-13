@@ -1,4 +1,11 @@
 package com.example.DMS.repository;
 
-public class DocumentRepository {
+import com.example.DMS.models.DmsDocument;
+import org.springframework.data.mongodb.repository.MongoRepository;
+
+import java.util.List;
+
+public interface DocumentRepository extends MongoRepository<DmsDocument, String> {
+    List<DmsDocument> findByWorkspaceIdAndDeletedFalse(String workspaceId);
+    List<DmsDocument> findByOwnerNidAndDeletedFalse(String ownerNid);
 }

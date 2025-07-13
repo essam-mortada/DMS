@@ -1,5 +1,6 @@
 package com.example.DMS.responses;
 
+import com.example.DMS.DTO.userDTO;
 import com.example.DMS.models.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
@@ -9,7 +10,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class AuthenticationResponse {
     private String token;
-    private UserResponse user;
+    private userDTO user;
 
     // Constructor for token-only response
     public AuthenticationResponse(String token) {
@@ -19,7 +20,7 @@ public class AuthenticationResponse {
     // Constructor for token + user response
     public AuthenticationResponse(String token, User user) {
         this.token = token;
-        this.user = new UserResponse(user);
+        this.user = new userDTO();
     }
 
     // Getters
@@ -27,7 +28,7 @@ public class AuthenticationResponse {
         return token;
     }
 
-    public UserResponse getUser() {
+    public userDTO getUser() {
         return user;
     }
 }

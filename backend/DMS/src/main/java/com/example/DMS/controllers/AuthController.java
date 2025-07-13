@@ -3,6 +3,9 @@ package com.example.DMS.controllers;
 
 import com.example.DMS.requests.AuthenticationRequest;
 import com.example.DMS.requests.RegisterRequest;
+import com.example.DMS.DTO.userDTO;
+import com.example.DMS.DTO.authDTO;
+
 import com.example.DMS.responses.AuthenticationResponse;
 import com.example.DMS.services.AuthService;
 import jakarta.validation.Valid;
@@ -22,12 +25,12 @@ public class AuthController {
 
 
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register( @Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<AuthenticationResponse> register( @Valid @RequestBody userDTO request) {
         return ResponseEntity.ok(authService.register(request));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthenticationResponse> login( @Valid @RequestBody AuthenticationRequest request) {
+    public ResponseEntity<AuthenticationResponse> login( @Valid @RequestBody authDTO request) {
         return ResponseEntity.ok(authService.login(request));
     }
 }

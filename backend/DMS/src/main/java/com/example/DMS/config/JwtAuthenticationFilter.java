@@ -41,8 +41,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-
-        jwt = authHeader.substring(7); // Remove "Bearer " prefix
+        // removing bearer prefix
+        jwt = authHeader.substring(7);
         try {
             username = jwtUtils.extractUsername(jwt);
         } catch (Exception e) {
@@ -60,6 +60,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                 userDetails,
                                 null,
                                 userDetails.getAuthorities()
+
                         );
 
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

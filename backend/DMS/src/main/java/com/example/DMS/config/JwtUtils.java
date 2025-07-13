@@ -2,13 +2,19 @@ package com.example.DMS.config;
 
 
 import com.example.DMS.models.User;
+import com.example.DMS.services.CustomUserDetails;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 
 @Component
@@ -68,9 +74,27 @@ public class JwtUtils {
                 .setSubject(user.getEmail())
                 .claim("userId", user.getId())
                 .claim("role", user.getRole().name())
+                .claim("nid", user.getNationalId())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_MS))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
-}
+
+
+
+
+        public String getCurrentUserNid() {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.isAuthenticated()) {
+                return ((CustomUserDetails) authentication.getPrincipal()).getNid();
+            }
+            throw new IllegalStateException("User not authenticated");
+        }
+
+    public String extractNid(String token) {
+        return extractClaim(token, claims -> claims.get("nid").toString());
+    }
+    }
+
+

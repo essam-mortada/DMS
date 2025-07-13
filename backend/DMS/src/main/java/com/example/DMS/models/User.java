@@ -141,4 +141,8 @@ public class User implements UserDetails {
                 ", role=" + role +
                 '}';
     }
+
+    public String getNid() {
+        return nationalId;
+    }
 }

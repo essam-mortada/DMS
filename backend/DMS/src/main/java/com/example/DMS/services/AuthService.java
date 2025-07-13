@@ -1,11 +1,14 @@
 package com.example.DMS.services;
 
 import com.example.DMS.config.JwtUtils;
+import com.example.DMS.mappers.UserMapper;
 import com.example.DMS.models.Role;
 import com.example.DMS.models.User;
 import com.example.DMS.repository.UserRepository;
 import com.example.DMS.requests.AuthenticationRequest;
 import com.example.DMS.requests.RegisterRequest;
+import com.example.DMS.DTO.userDTO;
+import com.example.DMS.DTO.authDTO;
 import com.example.DMS.responses.AuthenticationResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,7 +19,8 @@ import org.springframework.stereotype.Service;
 import com.example.DMS.exception.AuthenticationException;
 import com.example.DMS.exception.UserNotFoundException;
 
-import com.example.DMS.responses.UserResponse;@Service
+import com.example.DMS.responses.UserResponse;
+@Service
 @RequiredArgsConstructor
 public class AuthService {
 
@@ -24,10 +28,11 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
+    private final UserMapper UserMapper;
 
 
 
-    public AuthenticationResponse register(RegisterRequest request) {
+    public AuthenticationResponse register(userDTO request) {
 
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Email is already registered");
@@ -43,10 +48,10 @@ public class AuthService {
         userRepository.save(user);
 
         String token = jwtUtils.generateToken(user.getEmail());
-        return new AuthenticationResponse(token, user);
+        return new AuthenticationResponse(token, UserMapper.toDTO(user));
     }
 
-    public AuthenticationResponse login(AuthenticationRequest request) {
+    public AuthenticationResponse login(authDTO request) {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -62,7 +67,7 @@ public class AuthService {
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         String token = jwtUtils.generateToken(user);
-        return new AuthenticationResponse(token, new UserResponse(user));
+        return new AuthenticationResponse(token, UserMapper.toDTO(user));
     }
 }
 
