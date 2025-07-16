@@ -14,7 +14,7 @@ public class WorkspaceDTO {
 
     private String userNid;
 
-
+    private String id;
 
     public String getName() {
         return name;

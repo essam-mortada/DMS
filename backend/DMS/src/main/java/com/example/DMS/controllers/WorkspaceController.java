@@ -17,7 +17,6 @@ import java.util.logging.ErrorManager;
 @RestController
 @RequestMapping("/api/workspaces")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:4200")
 public class WorkspaceController {
 
     private final WorkspaceService workspaceService;
@@ -26,7 +25,7 @@ public class WorkspaceController {
     public ResponseEntity<?> createWorkspace(@RequestBody @Valid WorkspaceDTO request) {
         try {
             Workspace ws = workspaceService.create(request.getName());
-            return ResponseEntity.ok(new WorkspaceDTO(ws.getName(), ws.getUserNid()));
+            return ResponseEntity.ok(new WorkspaceDTO(ws.getName(), ws.getUserNid(), ws.getId()));
         } catch (Exception e) {
             log.error("Workspace creation failed", e);
             return ResponseEntity.internalServerError().build();
@@ -41,7 +40,7 @@ public class WorkspaceController {
                 return ResponseEntity.noContent().build();
             }
             return ResponseEntity.ok(workspaces.stream()
-                    .map(ws -> new WorkspaceDTO(ws.getName(), ws.getUserNid()))
+                    .map(ws -> new WorkspaceDTO(ws.getName(), ws.getUserNid(), ws.getId()))
                     .toList());
         } catch (Exception e) {
             log.error("Failed to fetch workspaces", e);
@@ -53,7 +52,7 @@ public class WorkspaceController {
     public ResponseEntity<?> getWorkspaceById(@PathVariable @NotBlank String workspaceId) {
         try {
             Workspace ws = workspaceService.getWorkspaceById(workspaceId);
-            return ResponseEntity.ok(new WorkspaceDTO(ws.getName(), ws.getUserNid()));
+            return ResponseEntity.ok(new WorkspaceDTO(ws.getName(), ws.getUserNid() , ws.getId()));
         } catch (Exception e) {
             log.error("Failed to fetch workspace", e);
             return ResponseEntity.internalServerError().build();
@@ -77,7 +76,7 @@ public class WorkspaceController {
             Workspace ws = workspaceService.getWorkspaceById(workspaceId);
             ws.setName(request.getName());
             workspaceService.update(workspaceId, request.getName());
-            return ResponseEntity.ok(new WorkspaceDTO(ws.getName(), ws.getUserNid()));
+            return ResponseEntity.ok(new WorkspaceDTO(ws.getName(), ws.getUserNid(), ws.getId()));
         } catch (Exception e) {
             log.error("Failed to update workspace", e);
             return ResponseEntity.internalServerError().build();
