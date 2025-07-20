@@ -69,5 +69,37 @@ public class GlobalExceptionHandler {
                 ));
     }
 
-    
+
+    @ExceptionHandler(FolderNotEmptyException.class)
+    public ResponseEntity<ErrorResponse> handleFolderNotEmpty(FolderNotEmptyException ex) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse(
+                        HttpStatus.CONFLICT.value(),
+                        "Folder Not Empty",
+                        Collections.singletonList(ex.getMessage()),
+                        System.currentTimeMillis()
+                ));
+    }
+
+    @ExceptionHandler(FolderNameExistsException.class)
+    public ResponseEntity<ErrorResponse> handleFolderNameExists(FolderNameExistsException ex) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse(
+                        HttpStatus.CONFLICT.value(),
+                        "Folder Name Exists",
+                        Collections.singletonList(ex.getMessage()),
+                        System.currentTimeMillis()
+                ));
+    }
+
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNotFound(ResourceNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(
+                HttpStatus.NOT_FOUND.value(),
+                "Resource Not Found",
+                Collections.singletonList(ex.getMessage()), System.currentTimeMillis()));
+    }
 }

@@ -1,20 +1,19 @@
 package com.example.DMS.DTO;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class DocumentDTO {
-
-    @NotBlank(message = "Document name is required")
+    private String id;
     private String name;
-
-    @NotBlank(message = "Document type is required")
     private String type;
-
-    @NotBlank(message = "Owner NID is required")
     private String ownerNid;
-
-    @NotBlank(message = "Workspace ID is required")
     private String workspaceId;
+    private String folderId;
+    private List<String> tags;
+    private boolean deleted;
+    private LocalDateTime createdAt;
 }
