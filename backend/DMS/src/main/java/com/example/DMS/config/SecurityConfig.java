@@ -1,6 +1,9 @@
 package com.example.DMS.config;
 
+import com.example.DMS.mappers.DocumentMapper;
+import com.example.DMS.mappers.FolderMapper;
 import com.example.DMS.mappers.UserMapper;
+import com.example.DMS.mappers.workspaceMapper;
 import com.example.DMS.models.User;
 import com.example.DMS.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,6 +111,22 @@ public class SecurityConfig {
     @Bean
     public UserMapper userMapper() {
         return new UserMapper();
+
+    }
+
+    @Bean
+    public DocumentMapper documentMapper() {
+        return new DocumentMapper();
+
+    }
+    @Bean
+    public FolderMapper folderMapper() {
+        return new FolderMapper();
+
+    }
+    @Bean
+    public workspaceMapper workspaceMapper() {
+        return new workspaceMapper();
 
     }
 }

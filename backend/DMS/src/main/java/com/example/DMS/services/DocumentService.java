@@ -6,14 +6,13 @@ import com.example.DMS.DTO.UploadDocumentRequest;
 import com.example.DMS.config.JwtUtils;
 import com.example.DMS.models.DmsDocument;
 import com.example.DMS.repository.DocumentRepository;
+import com.example.DMS.mappers.DocumentMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -34,22 +33,28 @@ import java.util.stream.Collectors;
 public class DocumentService {
     private final DocumentRepository documentRepository;
     private final JwtUtils currentUserService;
+    private final DocumentMapper documentMapper;
 
     public DocumentDTO uploadDocument(MultipartFile file, UploadDocumentRequest meta) throws IOException {
         if (file.isEmpty()) {
             throw new IllegalArgumentException("Uploaded file is empty");
         }
 
-        String userNid = currentUserService.getCurrentUserNid();
+        final long fileSize = meta.getSizeOrDefault(file.getSize());
+        if (fileSize <= 0) {
+            throw new IllegalArgumentException("File size must be positive");
+        }
 
+        String userNid = currentUserService.getCurrentUserNid();
         String storedFileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
         Path filePath = Paths.get("uploads").resolve(storedFileName);
         Files.createDirectories(filePath.getParent());
         Files.write(filePath, file.getBytes());
 
         DmsDocument document = DmsDocument.builder()
-                .name(meta.getName() != null ? meta.getName() : file.getOriginalFilename())
-                .type(meta.getType() != null ? meta.getType() : file.getContentType())
+                .name(StringUtils.hasText(meta.getName()) ? meta.getName() : file.getOriginalFilename())
+                .size(fileSize)
+                .type(StringUtils.hasText(meta.getType()) ? meta.getType() : file.getContentType())
                 .workspaceId(meta.getWorkspaceId())
                 .folderId(meta.getFolderId())
                 .ownerNid(userNid)
@@ -57,126 +62,91 @@ public class DocumentService {
                 .deleted(false)
                 .build();
 
-        DmsDocument saved = documentRepository.save(document);
-        return toDto(saved);
+        return documentMapper.toDto(documentRepository.save(document));
     }
 
+    public Resource downloadDocument(String id) throws FileNotFoundException {
+        DmsDocument doc = documentRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Document not found"));
 
-    public DocumentDTO saveDocumentMetadata(DmsDocument document) {
-        DmsDocument saved = documentRepository.save(document);
-        return toDto(saved);
-    }
-
-    public Optional<DmsDocument> getDocumentById(String id) {
-        return documentRepository.findById(id);
-    }
-
-    public void softDeleteDocument(String id) {
-        documentRepository.findById(id).ifPresent(doc -> {
-            doc.setDeleted(true);
-            documentRepository.save(doc);
-        });
-    }
-
-    public List<DocumentDTO> getDocumentsByWorkspace(String workspaceId) {
-        return documentRepository.findByWorkspaceIdAndDeletedFalse(workspaceId)
-                .stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
-    }
-
-    public List<DocumentDTO> getDocumentsByOwner() {
-        String ownerNid = currentUserService.getCurrentUserNid();
-        return documentRepository.findByOwnerNidAndDeletedFalse(ownerNid)
-                .stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
-    }
-
-    public ResponseEntity<Resource> downloadDocument(String id) throws FileNotFoundException {
-        Optional<DmsDocument> documentOpt = documentRepository.findById(id);
-        if (documentOpt.isEmpty() || documentOpt.get().isDeleted()) {
+        if (doc.isDeleted()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Document not found or deleted");
         }
 
-        DmsDocument doc = documentOpt.get();
         File file = new File(doc.getUrl());
-        if (!file.exists()) throw new FileNotFoundException("File not found on disk");
-
-        Resource resource = new FileSystemResource(file);
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + doc.getName() + "\"")
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(resource);
+        if (!file.exists()) {
+            throw new FileNotFoundException("File not found on disk");
+        }
+        return new FileSystemResource(file);
     }
 
     public void softDelete(String id) {
+        if(documentRepository.findByOwnerNid(currentUserService.getCurrentUserNid()).stream().noneMatch(ws -> ws.getId().equals(id))){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have permission to delete this document");
+        }
         DmsDocument doc = documentRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Document not found"));
         doc.setDeleted(true);
         documentRepository.save(doc);
     }
 
-    public ResponseEntity<String> previewDocument(String id) {
+    public String previewDocument(String id) throws IOException {
+        if(documentRepository.findByOwnerNid(currentUserService.getCurrentUserNid()).stream().noneMatch(ws -> ws.getId().equals(id))){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have permission to view this document");
+        }
         DmsDocument doc = documentRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Document not found"));
 
-        try {
-            File file = new File(doc.getUrl());
-            byte[] bytes = Files.readAllBytes(file.toPath());
-            String base64 = Base64.getEncoder().encodeToString(bytes);
-            return ResponseEntity.ok(base64);
-        } catch (IOException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error reading file", e);
-        }
+        File file = new File(doc.getUrl());
+        byte[] bytes = Files.readAllBytes(file.toPath());
+        return Base64.getEncoder().encodeToString(bytes);
     }
 
-    public ResponseEntity<List<DocumentDTO>> getByWorkspace(String workspaceId) {
-        List<DmsDocument> docs = documentRepository.findByWorkspaceIdAndDeletedFalse(workspaceId);
-        List<DocumentDTO> dtos = docs.stream().map(this::toDto).collect(Collectors.toList());
-        return ResponseEntity.ok(dtos);
+    public List<DocumentDTO> getDocumentsByWorkspace(String workspaceId) {
+        return documentRepository.findByWorkspaceIdAndDeletedFalse(workspaceId)
+                .stream()
+                .map(documentMapper::toDto)
+                .collect(Collectors.toList());
     }
 
-    public ResponseEntity<List<DocumentDTO>> getByUser() {
+    public List<DocumentDTO> getDocumentsByOwner() {
         String nid = currentUserService.getCurrentUserNid();
-        List<DmsDocument> docs = documentRepository.findByOwnerNidAndDeletedFalse(nid);
-        List<DocumentDTO> dtos = docs.stream().map(this::toDto).collect(Collectors.toList());
-        return ResponseEntity.ok(dtos);
+        return documentRepository.findByOwnerNidAndDeletedFalse(nid)
+                .stream()
+                .map(documentMapper::toDto)
+                .collect(Collectors.toList());
     }
 
-    public ResponseEntity<DocumentDTO> getMetadata(String id) {
-        DmsDocument doc = documentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Document not found"));
-        return ResponseEntity.ok(toDto(doc));
+    public List<DocumentDTO> getDocumentsByFolder(String folderId) {
+        return documentRepository.findByFolderIdAndDeletedFalse(folderId)
+                .stream()
+                .map(documentMapper::toDto)
+                .collect(Collectors.toList());
     }
 
-    public ResponseEntity<DocumentDTO> updateMetadata(String id, UpdateDocumentMetadataRequest request) {
+    public DocumentDTO getDocumentMetadata(String id) {
         DmsDocument doc = documentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Document not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Document not found"));
+        return documentMapper.toDto(doc);
+    }
+
+    public DocumentDTO updateDocumentMetadata(String id, UpdateDocumentMetadataRequest request) {
+        if(documentRepository.findByOwnerNid(currentUserService.getCurrentUserNid()).stream().noneMatch(ws -> ws.getId().equals(id))){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have permission to update this document");
+        }
+        DmsDocument doc = documentRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Document not found"));
 
         doc.setName(request.getName());
         doc.setTags(request.getTags());
 
-        return ResponseEntity.ok(toDto(documentRepository.save(doc)));
+        return documentMapper.toDto(documentRepository.save(doc));
     }
 
-    public ResponseEntity<List<DocumentDTO>> search(String keyword) {
-        List<DmsDocument> docs = documentRepository.findByNameContainingIgnoreCaseAndDeletedFalse(keyword);
-        List<DocumentDTO> dtos = docs.stream().map(this::toDto).collect(Collectors.toList());
-        return ResponseEntity.ok(dtos);
-    }
-
-    private DocumentDTO toDto(DmsDocument doc) {
-        DocumentDTO dto = new DocumentDTO();
-        dto.setId(doc.getId());
-        dto.setName(doc.getName());
-        dto.setType(doc.getType());
-        dto.setOwnerNid(doc.getOwnerNid());
-        dto.setWorkspaceId(doc.getWorkspaceId());
-        dto.setFolderId(doc.getFolderId());
-        dto.setTags(doc.getTags());
-        dto.setDeleted(doc.isDeleted());
-        dto.setCreatedAt(doc.getCreatedAt());
-        return dto;
+    public List<DocumentDTO> searchDocuments(String keyword) {
+        return documentRepository.findByNameContainingIgnoreCaseAndDeletedFalse(keyword)
+                .stream()
+                .map(documentMapper::toDto)
+                .collect(Collectors.toList());
     }
 }

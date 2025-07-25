@@ -1,14 +1,20 @@
 package com.example.DMS.services;
 
+import com.example.DMS.DTO.FolderDTO;
 import com.example.DMS.config.JwtUtils;
+import com.example.DMS.mappers.FolderMapper;
 import com.example.DMS.models.Folder;
+import com.example.DMS.repository.DocumentRepository;
 import com.example.DMS.repository.FolderRepository;
 import com.example.DMS.repository.WorkspaceRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -16,72 +22,85 @@ public class FolderService {
     private final FolderRepository folderRepository;
     private final WorkspaceRepository workspaceRepository;
     private final JwtUtils currentUserService;
+    private final FolderMapper folderMapper;
+    private final DocumentRepository documentRepository;  // Add this
 
-    public Folder create(String name, String workspaceId, String parentFolderId) {
-        // Validate workspace exists
-        System.out.println("Workspace ID: " + workspaceId);
 
-        if (!workspaceRepository.existsById(workspaceId)) {
-            throw new IllegalArgumentException("Workspace not found");
+    public FolderDTO create(FolderDTO dto) {
+        if (!workspaceRepository.existsById(dto.getWorkspaceId())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Workspace not found");
         }
 
-        // Check if folder with same name already exists in the same location
-        if (folderRepository.existsByNameAndWorkspaceIdAndParentFolderId(name, workspaceId, parentFolderId)) {
-            throw new IllegalArgumentException("Folder with this name already exists in this location");
+        if (folderRepository.existsByNameAndWorkspaceIdAndParentFolderId(
+                dto.getName(),
+                dto.getWorkspaceId(),
+                dto.getParentFolderId())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Folder with this name already exists in this location");
         }
 
         String userNid = currentUserService.getCurrentUserNid();
 
-        Folder folder = Folder.builder()
-                .name(name)
-                .workspaceId(workspaceId)
-                .parentFolderId(parentFolderId)
-                .createdBy(userNid)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
+        Folder folder = new Folder();
+        folder.setName(dto.getName());
+        folder.setWorkspaceId(dto.getWorkspaceId());
+        folder.setParentFolderId(dto.getParentFolderId());
+        folder.setCreatedBy(userNid);
+        folder.setCreatedAt(LocalDateTime.now());
+        folder.setUpdatedAt(LocalDateTime.now());
 
-         //Update workspace folder count
-        workspaceRepository.findById(workspaceId).ifPresent(workspace -> {
+        workspaceRepository.findById(dto.getWorkspaceId()).ifPresent(workspace -> {
             workspace.setFolderCount(workspace.getFolderCount() + 1);
             workspaceRepository.save(workspace);
         });
 
-        return folderRepository.save(folder);
+        return folderMapper.toDto(folderRepository.save(folder));
     }
 
-    public List<Folder> getByWorkspace(String workspaceId) {
-        return folderRepository.findByWorkspaceId(workspaceId);
+    public List<FolderDTO> getByWorkspace(String workspaceId) {
+        return folderRepository.findByWorkspaceId(workspaceId).stream()
+                .filter(folder -> folder.getParentFolderId() == null)  // only root folders
+                .map(folderMapper::toDto)
+                .collect(Collectors.toList());
     }
 
-    public List<Folder> getByParentFolder(String parentFolderId) {
-        return folderRepository.findByParentFolderId(parentFolderId);
+    public List<FolderDTO> getByParentFolder(String parentFolderId) {
+        return folderRepository.findByParentFolderId(parentFolderId).stream()
+                .map(folderMapper::toDto)
+                .collect(Collectors.toList());
     }
 
-    public Folder getById(String folderId) {
+    public FolderDTO getById(String folderId) {
         return folderRepository.findById(folderId)
-                .orElseThrow(() -> new EmptyResultDataAccessException("Folder not found", 1));
+                .map(folderMapper::toDto)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Folder not found"));
     }
 
-    public Folder update(String folderId, String name) {
+    public FolderDTO update(String folderId, FolderDTO dto) {
         Folder folder = folderRepository.findById(folderId)
-                .orElseThrow(() -> new EmptyResultDataAccessException("Folder not found", 1));
-        folder.setName(name);
-        return folderRepository.save(folder);
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Folder not found"));
+
+        folder.setName(dto.getName());
+        folder.setUpdatedAt(LocalDateTime.now());
+
+        return folderMapper.toDto(folderRepository.save(folder));
     }
 
     public void delete(String folderId) {
-        // Check if folder exists
         Folder folder = folderRepository.findById(folderId)
-                .orElseThrow(() -> new EmptyResultDataAccessException("Folder not found", 1));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Folder not found"));
 
-        // Check if folder is empty (no subfolders or documents)
         long subfolderCount = folderRepository.countByParentFolderId(folderId);
-        // You would also check for documents here in a real implementation
-
         if (subfolderCount > 0) {
-            throw new IllegalStateException("Cannot delete folder - it contains subfolders");
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Cannot delete folder - it contains subfolders");
         }
+
+        // Soft delete all documents in this folder
+        documentRepository.findByFolderIdAndDeletedFalse(folderId).forEach(document -> {
+            document.setDeleted(true);
+            documentRepository.save(document);
+        });
 
         // Update workspace folder count
         workspaceRepository.findById(folder.getWorkspaceId()).ifPresent(workspace -> {
@@ -89,6 +108,7 @@ public class FolderService {
             workspaceRepository.save(workspace);
         });
 
+        // Delete the folder itself (hard delete)
         folderRepository.deleteById(folderId);
     }
 }

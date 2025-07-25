@@ -22,8 +22,9 @@ public class DmsDocument {
     private String workspaceId;
     private String folderId;
     private List<String> tags;
+    private long  size;
     private boolean deleted = false;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime updatedAt = LocalDateTime.now();
 }
 

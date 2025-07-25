@@ -14,6 +14,8 @@ public class DocumentDTO {
     private String workspaceId;
     private String folderId;
     private List<String> tags;
+    private Long  size;
     private boolean deleted;
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt ;
+    private LocalDateTime updatedAt ;
 }

@@ -67,4 +67,8 @@ public class Workspace {
     public void setFolders(List<Folder> folders) {
         this.folders = folders;
     }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
 }

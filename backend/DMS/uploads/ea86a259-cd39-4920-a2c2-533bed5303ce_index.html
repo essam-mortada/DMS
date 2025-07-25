@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocuManager - Document Management System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f9fafb;
+            color: #111827;
+        }
+
+        /* Header Styles */
+        .header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 1rem 0;
+        }
+
+        .header-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo i {
+            font-size: 2rem;
+            color: #2563eb;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-input {
+            padding: 0.5rem 0.75rem 0.5rem 2.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            width: 16rem;
+            font-size: 0.875rem;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+        }
+
+        .avatar {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            background: #2563eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        /* Tabs */
+        .tabs {
+            margin-bottom: 2rem;
+        }
+
+        .tab-list {
+            display: flex;
+            background: #f3f4f6;
+            border-radius: 0.5rem;
+            padding: 0.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 0.5rem 1rem;
+            border: none;
+            background: transparent;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .tab-button.active {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background: #f9fafb;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: #6b7280;
+            padding: 0.25rem 0.5rem;
+        }
+
+        .btn-ghost:hover {
+            background: #f3f4f6;
+        }
+
+        .btn-danger {
+            color: #dc2626;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .card-description {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-title {
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .stat-subtitle {
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+
+        /* Workspace Grid */
+        .workspace-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .workspace-card {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: box-shadow 0.2s;
+        }
+
+        .workspace-card:hover {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .workspace-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+
+        .workspace-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+        }
+
+        .workspace-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 1rem;
+        }
+
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th {
+            background: #f9fafb;
+            padding: 0.75rem 1.5rem;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .table td {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .table tr:hover {
+            background: #f9fafb;
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border-radius: 0.375rem;
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            margin-bottom: 1rem;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .modal-description {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .modal-body {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+
+        /* Document List */
+        .document-list {
+            space-y: 1rem;
+        }
+
+        .document-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .document-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .document-details h4 {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .document-details p {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .document-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Dropdown */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background: white;
+            min-width: 160px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 0.375rem;
+            z-index: 1;
+            border: 1px solid #e5e7eb;
+        }
+
+        .dropdown-content.active {
+            display: block;
+        }
+
+        .dropdown-item {
+            display: block;
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            color: #374151;
+            cursor: pointer;
+        }
+
+        .dropdown-item:hover {
+            background: #f9fafb;
+        }
+
+        .dropdown-item.danger {
+            color: #dc2626;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .search-input {
+                width: 100%;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .workspace-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .table-container {
+                font-size: 0.875rem;
+            }
+        }
+
+        /* Utilities */
+        .hidden {
+            display: none;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .gap-2 {
+            gap: 0.5rem;
+        }
+
+        .gap-4 {
+            gap: 1rem;
+        }
+
+        .mb-4 {
+            margin-bottom: 1rem;
+        }
+
+        .mb-6 {
+            margin-bottom: 1.5rem;
+        }
+
+        .text-sm {
+            font-size: 0.875rem;
+        }
+
+        .text-gray-500 {
+            color: #6b7280;
+        }
+
+        .font-medium {
+            font-weight: 500;
+        }
+
+        .font-bold {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-folder"></i>
+                <h1>DocuManager</h1>
+            </div>
+            <div class="header-actions">
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" placeholder="Search documents..." id="searchInput">
+                </div>
+                <div class="avatar">JD</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab-list">
+                <button class="tab-button active" data-tab="dashboard">Dashboard</button>
+                <button class="tab-button" data-tab="workspaces">Workspaces</button>
+                <button class="tab-button" data-tab="documents">All Documents</button>
+            </div>
+
+            <!-- Dashboard Tab -->
+            <div class="tab-content active" id="dashboard">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 style="font-size: 1.875rem; font-weight: bold;">Dashboard</h2>
+                    <div class="flex gap-4">
+                        <button class="btn btn-primary" onclick="openModal('createWorkspaceModal')">
+                            <i class="fas fa-plus"></i>
+                            New Workspace
+                        </button>
+                        <button class="btn btn-secondary" onclick="openModal('uploadModal')">
+                            <i class="fas fa-upload"></i>
+                            Upload Document
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">Total Workspaces</span>
+                            <i class="fas fa-folder text-gray-500"></i>
+                        </div>
+                        <div class="stat-value" id="totalWorkspaces">4</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">Total Documents</span>
+                            <i class="fas fa-file text-gray-500"></i>
+                        </div>
+                        <div class="stat-value" id="totalDocuments">6</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">Storage Used</span>
+                            <i class="fas fa-upload text-gray-500"></i>
+                        </div>
+                        <div class="stat-value">24.8 GB</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">Recent Uploads</span>
+                            <i class="fas fa-upload text-gray-500"></i>
+                        </div>
+                        <div class="stat-value">12</div>
+                        <div class="stat-subtitle">This week</div>
+                    </div>
+                </div>
+
+                <!-- Recent Documents -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Recent Documents</h3>
+                        <p class="card-description">Your most recently uploaded documents</p>
+                    </div>
+                    <div class="card-content">
+                        <div class="document-list" id="recentDocuments">
+                            <!-- Documents will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Workspaces Tab -->
+            <div class="tab-content" id="workspaces">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 style="font-size: 1.875rem; font-weight: bold;">Workspaces</h2>
+                    <button class="btn btn-primary" onclick="openModal('createWorkspaceModal')">
+                        <i class="fas fa-plus"></i>
+                        New Workspace
+                    </button>
+                </div>
+
+                <div class="workspace-grid" id="workspaceGrid">
+                    <!-- Workspaces will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Documents Tab -->
+            <div class="tab-content" id="documents">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 style="font-size: 1.875rem; font-weight: bold;">All Documents</h2>
+                    <div class="flex gap-4">
+                        <select class="form-select" id="workspaceFilter" style="width: auto;">
+                            <option value="">All Workspaces</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="openModal('uploadModal')">
+                            <i class="fas fa-upload"></i>
+                            Upload Document
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-content" style="padding: 0;">
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Type</th>
+                                        <th>Size</th>
+                                        <th>Upload Date</th>
+                                        <th>Workspace</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="documentsTable">
+                                    <!-- Documents will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Create Workspace Modal -->
+    <div class="modal" id="createWorkspaceModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Create New Workspace</h3>
+                <p class="modal-description">Create a new workspace to organize your documents.</p>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Name</label>
+                    <input type="text" class="form-input" id="workspaceName" placeholder="Workspace name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <input type="text" class="form-input" id="workspaceDescription" placeholder="Workspace description">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('createWorkspaceModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="createWorkspace()">Create Workspace</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Document Modal -->
+    <div class="modal" id="uploadModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Upload Document</h3>
+                <p class="modal-description">Upload a new document to your workspace.</p>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Workspace</label>
+                    <select class="form-select" id="uploadWorkspace">
+                        <!-- Options will be populated by JavaScript -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">File</label>
+                    <input type="file" class="form-input" id="uploadFile">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('uploadModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="uploadDocument()">Upload</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock data
+        let workspaces = [
+            {
+                id: "1",
+                name: "Project Alpha",
+                description: "Documents for Project Alpha",
+                documentCount: 2,
+                createdDate: "2024-01-15",
+            },
+            {
+                id: "2",
+                name: "Marketing Materials",
+                description: "Brand assets and marketing docs",
+                documentCount: 2,
+                createdDate: "2024-01-20",
+            },
+            {
+                id: "3",
+                name: "Legal Documents",
+                description: "Contracts and legal paperwork",
+                documentCount: 1,
+                createdDate: "2024-02-01",
+            },
+            {
+                id: "4",
+                name: "HR Resources",
+                description: "Employee handbooks and policies",
+                documentCount: 1,
+                createdDate: "2024-02-10",
+            },
+        ];
+
+        let documents = [
+            { id: "1", name: "Project_Proposal.pdf", type: "PDF", size: "2.4 MB", uploadDate: "2024-01-16", workspaceId: "1" },
+            { id: "2", name: "Budget_Analysis.xlsx", type: "Excel", size: "1.8 MB", uploadDate: "2024-01-17", workspaceId: "1" },
+            { id: "3", name: "Brand_Guidelines.pdf", type: "PDF", size: "5.2 MB", uploadDate: "2024-01-21", workspaceId: "2" },
+            { id: "4", name: "Marketing_Strategy.docx", type: "Word", size: "3.1 MB", uploadDate: "2024-01-22", workspaceId: "2" },
+            { id: "5", name: "Contract_Template.pdf", type: "PDF", size: "1.2 MB", uploadDate: "2024-02-02", workspaceId: "3" },
+            { id: "6", name: "Employee_Handbook.pdf", type: "PDF", size: "4.5 MB", uploadDate: "2024-02-11", workspaceId: "4" },
+        ];
+
+        let currentWorkspaceFilter = '';
+        let searchQuery = '';
+
+        // Tab functionality
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const tabName = button.getAttribute('data-tab');
+                switchTab(tabName);
+            });
+        });
+
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+
+            // Refresh content based on active tab
+            if (tabName === 'workspaces') {
+                renderWorkspaces();
+            } else if (tabName === 'documents') {
+                renderDocuments();
+                populateWorkspaceFilter();
+            }
+        }
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            searchQuery = e.target.value.toLowerCase();
+            renderDocuments();
+        });
+
+        // Workspace filter
+        document.getElementById('workspaceFilter').addEventListener('change', (e) => {
+            currentWorkspaceFilter = e.target.value;
+            renderDocuments();
+        });
+
+        // Modal functions
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+            if (modalId === 'uploadModal') {
+                populateUploadWorkspaces();
+            }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // Close modal when clicking outside
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+        });
+
+        // Render functions
+        function renderRecentDocuments() {
+            const container = document.getElementById('recentDocuments');
+            const recentDocs = documents.slice(0, 5);
+            
+            container.innerHTML = recentDocs.map(doc => {
+                const workspace = workspaces.find(w => w.id === doc.workspaceId);
+                return `
+                    <div class="document-item">
+                        <div class="document-info">
+                            <i class="fas fa-file"></i>
+                            <div class="document-details">
+                                <h4>${doc.name}</h4>
+                                <p>${doc.size} • ${doc.uploadDate}</p>
+                            </div>
+                        </div>
+                        <div class="document-actions">
+                            <span class="badge">${doc.type}</span>
+                            <div class="dropdown">
+                                <button class="btn btn-ghost" onclick="toggleDropdown(event)">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <div class="dropdown-content">
+                                    <a class="dropdown-item" onclick="downloadDocument('${doc.id}')">
+                                        <i class="fas fa-download"></i> Download
+                                    </a>
+                                    <a class="dropdown-item danger" onclick="deleteDocument('${doc.id}')">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderWorkspaces() {
+            const container = document.getElementById('workspaceGrid');
+            container.innerHTML = workspaces.map(workspace => `
+                <div class="workspace-card">
+                    <div class="workspace-header">
+                        <div class="workspace-title">
+                            <i class="fas fa-folder" style="color: #2563eb;"></i>
+                            ${workspace.name}
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-ghost" onclick="toggleDropdown(event)">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <div class="dropdown-content">
+                                <a class="dropdown-item">Edit</a>
+                                <a class="dropdown-item danger" onclick="deleteWorkspace('${workspace.id}')">Delete</a>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-500 mb-4">${workspace.description}</p>
+                    <div class="workspace-meta">
+                        <span>${workspace.documentCount} documents</span>
+                        <span>Created ${workspace.createdDate}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderDocuments() {
+            const container = document.getElementById('documentsTable');
+            const filteredDocs = documents.filter(doc => {
+                const matchesSearch = doc.name.toLowerCase().includes(searchQuery);
+                const matchesWorkspace = currentWorkspaceFilter ? doc.workspaceId === currentWorkspaceFilter : true;
+                return matchesSearch && matchesWorkspace;
+            });
+
+            container.innerHTML = filteredDocs.map(doc => {
+                const workspace = workspaces.find(w => w.id === doc.workspaceId);
+                return `
+                    <tr>
+                        <td>
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-file"></i>
+                                <span class="font-medium">${doc.name}</span>
+                            </div>
+                        </td>
+                        <td><span class="badge">${doc.type}</span></td>
+                        <td class="text-sm text-gray-500">${doc.size}</td>
+                        <td class="text-sm text-gray-500">${doc.uploadDate}</td>
+                        <td class="text-sm text-gray-500">${workspace?.name || 'Unknown'}</td>
+                        <td>
+                            <div class="flex gap-2">
+                                <button class="btn btn-ghost" onclick="downloadDocument('${doc.id}')">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                                <button class="btn btn-ghost btn-danger" onclick="deleteDocument('${doc.id}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function populateWorkspaceFilter() {
+            const select = document.getElementById('workspaceFilter');
+            select.innerHTML = '<option value="">All Workspaces</option>' + 
+                workspaces.map(w => `<option value="${w.id}">${w.name}</option>`).join('');
+        }
+
+        function populateUploadWorkspaces() {
+            const select = document.getElementById('uploadWorkspace');
+            select.innerHTML = workspaces.map(w => `<option value="${w.id}">${w.name}</option>`).join('');
+        }
+
+        // Action functions
+        function createWorkspace() {
+            const name = document.getElementById('workspaceName').value;
+            const description = document.getElementById('workspaceDescription').value;
+            
+            if (name && description) {
+                const newWorkspace = {
+                    id: Date.now().toString(),
+                    name,
+                    description,
+                    documentCount: 0,
+                    createdDate: new Date().toISOString().split('T')[0]
+                };
+                
+                workspaces.push(newWorkspace);
+                updateStats();
+                renderWorkspaces();
+                closeModal('createWorkspaceModal');
+                
+                // Clear form
+                document.getElementById('workspaceName').value = '';
+                document.getElementById('workspaceDescription').value = '';
+                
+                alert('Workspace created successfully!');
+            }
+        }
+
+        function uploadDocument() {
+            const workspaceId = document.getElementById('uploadWorkspace').value;
+            const fileInput = document.getElementById('uploadFile');
+            
+            if (workspaceId && fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const newDocument = {
+                    id: Date.now().toString(),
+                    name: file.name,
+                    type: file.name.split('.').pop().toUpperCase(),
+                    size: (file.size / (1024 * 1024)).toFixed(1) + ' MB',
+                    uploadDate: new Date().toISOString().split('T')[0],
+                    workspaceId
+                };
+                
+                documents.push(newDocument);
+                
+                // Update workspace document count
+                const workspace = workspaces.find(w => w.id === workspaceId);
+                if (workspace) {
+                    workspace.documentCount++;
+                }
+                
+                updateStats();
+                renderRecentDocuments();
+                renderDocuments();
+                closeModal('uploadModal');
+                
+                // Clear form
+                fileInput.value = '';
+                
+                alert('Document uploaded successfully!');
+            }
+        }
+
+        function downloadDocument(docId) {
+            const doc = documents.find(d => d.id === docId);
+            if (doc) {
+                alert(`Downloading: ${doc.name}`);
+                // In a real application, you would trigger the actual download here
+            }
+        }
+
+        function deleteDocument(docId) {
+            if (confirm('Are you sure you want to delete this document?')) {
+                const docIndex = documents.findIndex(d => d.id === docId);
+                if (docIndex > -1) {
+                    const doc = documents[docIndex];
+                    const workspace = workspaces.find(w => w.id === doc.workspaceId);
+                    if (workspace) {
+                        workspace.documentCount--;
+                    }
+                    
+                    documents.splice(docIndex, 1);
+                    updateStats();
+                    renderRecentDocuments();
+                    renderDocuments();
+                    alert('Document deleted successfully!');
+                }
+            }
+        }
+
+        function deleteWorkspace(workspaceId) {
+            if (confirm('Are you sure you want to delete this workspace? All documents in this workspace will also be deleted.')) {
+                // Remove workspace
+                const workspaceIndex = workspaces.findIndex(w => w.id === workspaceId);
+                if (workspaceIndex > -1) {
+                    workspaces.splice(workspaceIndex, 1);
+                }
+                
+                // Remove documents in this workspace
+                documents = documents.filter(d => d.workspaceId !== workspaceId);
+                
+                updateStats();
+                renderWorkspaces();
+                renderRecentDocuments();
+                renderDocuments();
+                alert('Workspace deleted successfully!');
+            }
+        }
+
+        function toggleDropdown(event) {
+            event.stopPropagation();
+            const dropdown = event.target.closest('.dropdown');
+            const content = dropdown.querySelector('.dropdown-content');
+            
+            // Close all other dropdowns
+            document.querySelectorAll('.dropdown-content').forEach(d => {
+                if (d !== content) d.classList.remove('active');
+            });
+            
+            content.classList.toggle('active');
+        }
+
+        function updateStats() {
+            document.getElementById('totalWorkspaces').textContent = workspaces.length;
+            document.getElementById('totalDocuments').textContent = documents.length;
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('active'));
+        });
+
+        // Initialize the application
+        function init() {
+            renderRecentDocuments();
+            renderWorkspaces();
+            renderDocuments();
+            populateWorkspaceFilter();
+            updateStats();
+        }
+
+        // Start the application
+        init();
+    </script>
+</body>
+</html>

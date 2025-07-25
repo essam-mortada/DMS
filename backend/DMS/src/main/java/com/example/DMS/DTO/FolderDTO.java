@@ -20,6 +20,8 @@ public class FolderDTO {
 
     private String parentFolderId;
 
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
 
     public FolderDTO(Folder folder) {

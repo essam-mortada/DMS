@@ -1,52 +1,70 @@
-
 package com.example.DMS.services;
 
+import com.example.DMS.DTO.WorkspaceDTO;
 import com.example.DMS.config.JwtUtils;
+import com.example.DMS.mappers.workspaceMapper;
 import com.example.DMS.models.Workspace;
 import com.example.DMS.repository.WorkspaceRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class WorkspaceService {
     private final WorkspaceRepository workspaceRepository;
     private final JwtUtils currentUserService;
+    private final workspaceMapper workspaceMapper;
 
-    public Workspace create(String name) {
-        String userNid = currentUserService.getCurrentUserNid();
-
-        if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("Workspace name cannot be empty");
+    public WorkspaceDTO create(WorkspaceDTO request) {
+        if (request.getName() == null || request.getName().trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Workspace name cannot be empty");
         }
 
+        String userNid = currentUserService.getCurrentUserNid();
+
         Workspace ws = Workspace.builder()
-                .name(name)
+                .name(request.getName())
                 .userNid(userNid)
                 .build();
-        return workspaceRepository.save(ws);
+
+        return workspaceMapper.toDTO(workspaceRepository.save(ws));
     }
 
-    public List<Workspace> getCurrentUserWorkspaces() {
+    public List<WorkspaceDTO> getCurrentUserWorkspaces() {
         String userNid = currentUserService.getCurrentUserNid();
-        return workspaceRepository.findByUserNid(userNid);
+        return workspaceRepository.findByUserNid(userNid).stream()
+                .map(workspaceMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
-    public Workspace getWorkspaceById(String id) {
-        return workspaceRepository.findById(id).orElse(null);
+    public WorkspaceDTO getWorkspaceById(String id) {
+        if(workspaceRepository.findByUserNid(currentUserService.getCurrentUserNid()).stream().noneMatch(ws -> ws.getId().equals(id))){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have permission to view this workspace");
+        }
+        Workspace workspace = workspaceRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Workspace not found"));
+        return workspaceMapper.toDTO(workspace);
     }
 
-    public Workspace update(String id, String name) {
-        Workspace ws = getWorkspaceById(id);
-        ws.setName(name);
-        return workspaceRepository.save(ws);
+    public WorkspaceDTO update(String id, WorkspaceDTO request) {
+        Workspace ws = workspaceRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Workspace not found"));
+
+        ws.setName(request.getName());
+        return workspaceMapper.toDTO(workspaceRepository.save(ws));
     }
 
     public void delete(String id) {
-        if (workspaceRepository.findById(id).isEmpty()) {
-            throw new IllegalArgumentException("Workspace does not exist");
+        if(workspaceRepository.findByUserNid(currentUserService.getCurrentUserNid()).stream().noneMatch(ws -> ws.getId().equals(id))){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have permission to delete this workspace");
+        }
+        if (!workspaceRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Workspace does not exist");
         }
         workspaceRepository.deleteById(id);
     }
