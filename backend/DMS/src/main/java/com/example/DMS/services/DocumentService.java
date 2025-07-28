@@ -22,10 +22,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Base64;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -103,10 +100,12 @@ public class DocumentService {
     }
 
     public List<DocumentDTO> getDocumentsByWorkspace(String workspaceId) {
-        return documentRepository.findByWorkspaceIdAndDeletedFalse(workspaceId)
+        //documents that has no folder id
+        return documentRepository.findByWorkspaceIdAndFolderIdAndDeletedFalse(workspaceId, null)
                 .stream()
                 .map(documentMapper::toDto)
                 .collect(Collectors.toList());
+
     }
 
     public List<DocumentDTO> getDocumentsByOwner() {
@@ -148,5 +147,40 @@ public class DocumentService {
                 .stream()
                 .map(documentMapper::toDto)
                 .collect(Collectors.toList());
+    }
+
+    public List<DocumentDTO> sortDocuments(String workspaceId, String sort) {
+        Comparator<DmsDocument> comparator = buildComparator(sort);
+
+        return documentRepository.findByWorkspaceIdAndDeletedFalse(workspaceId)
+                .stream()
+                .sorted(comparator)
+                .map(documentMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    private Comparator<DmsDocument> buildComparator(String sort) {
+        if (sort == null) {
+            return defaultNameComparator();
+        }
+
+        return switch (sort.toLowerCase()) {
+            case "namedesc" -> nameDescComparator();
+            case "date" -> Comparator.comparing(DmsDocument::getCreatedAt);
+            case "size" -> Comparator.comparing(DmsDocument::getSize);
+            case "type" -> Comparator.comparing(DmsDocument::getType);
+            default -> defaultNameComparator();
+        };
+    }
+
+    private Comparator<DmsDocument> defaultNameComparator() {
+        return Comparator.comparing(
+                DmsDocument::getName,
+                Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)
+        );
+    }
+
+    private Comparator<DmsDocument> nameDescComparator() {
+        return defaultNameComparator().reversed();
     }
 }

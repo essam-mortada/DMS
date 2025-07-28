@@ -86,4 +86,9 @@ public class DocumentController {
     public ResponseEntity<List<DocumentDTO>> search(@RequestParam String keyword) {
         return ResponseEntity.ok(documentService.searchDocuments(keyword));
     }
+
+    @GetMapping("/sort")
+    public ResponseEntity<List<DocumentDTO>> sort(@RequestParam String workspaceId, @RequestParam String sort) {
+        return ResponseEntity.ok(documentService.sortDocuments(workspaceId, sort));
+    }
 }
