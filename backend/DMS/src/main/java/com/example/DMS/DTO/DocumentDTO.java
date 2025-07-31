@@ -18,4 +18,6 @@ public class DocumentDTO {
     private boolean deleted;
     private LocalDateTime createdAt ;
     private LocalDateTime updatedAt ;
+
+
 }

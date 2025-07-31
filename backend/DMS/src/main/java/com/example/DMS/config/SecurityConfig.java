@@ -49,10 +49,12 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request
+                        .requestMatchers("/public/share/**", "/public/share/preview/**").permitAll()
                         .requestMatchers("auth/**").permitAll()
                         .requestMatchers("api/folders/**").authenticated()
                         .requestMatchers("api/workspaces/**").authenticated()
                         .requestMatchers("/api/documents/**").authenticated()
+                        .requestMatchers("/api/share-link/**").authenticated()
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

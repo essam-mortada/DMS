@@ -19,4 +19,12 @@ public class Folder {
     private String createdBy; // User NID
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    private String shareLinkToken;
+    private SharePermission shareLinkPermission;
+    private boolean isLinkSharingEnabled = false;
+
+    public String getOwnerNid() {
+        return createdBy;
+    }
 }

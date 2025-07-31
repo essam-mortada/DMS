@@ -26,5 +26,9 @@ public class DmsDocument {
     private boolean deleted = false;
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();
+
+    private String shareLinkToken;
+    private SharePermission shareLinkPermission;
+    private boolean isLinkSharingEnabled = false;
 }
 

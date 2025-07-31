@@ -10,6 +10,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,6 +26,7 @@ public class DocumentController {
     private final ObjectMapper objectMapper;
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<DocumentDTO> uploadDocument(
             @RequestPart("file") MultipartFile file,
             @RequestPart("meta") String metaJson) throws IOException {
@@ -33,6 +35,7 @@ public class DocumentController {
     }
 
     @GetMapping("/download/{id}")
+    @PreAuthorize("@sharingService.hasPermissionToDocument(#id, 'VIEW')")
     public ResponseEntity<Resource> download(@PathVariable String id) throws IOException {
         Resource resource = documentService.downloadDocument(id);
         DocumentDTO metadata = documentService.getDocumentMetadata(id);
@@ -45,12 +48,14 @@ public class DocumentController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("@sharingService.hasPermissionToDocument(#id, 'EDIT')")
     public ResponseEntity<Void> softDelete(@PathVariable String id) {
         documentService.softDelete(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/preview/{id}")
+    @PreAuthorize("@sharingService.hasPermissionToDocument(#id, 'VIEW')")
     public ResponseEntity<String> preview(@PathVariable String id) throws IOException {
         return ResponseEntity.ok(documentService.previewDocument(id));
     }
