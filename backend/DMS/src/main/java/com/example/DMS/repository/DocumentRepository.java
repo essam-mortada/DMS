@@ -12,6 +12,8 @@ public interface DocumentRepository extends MongoRepository<DmsDocument, String>
     List<DmsDocument> findByFolderIdAndDeletedFalse(String folderId);
     List<DmsDocument> findByOwnerNid(String ownerNid);
     List<DmsDocument> findByWorkspaceIdAndFolderIdAndDeletedFalse(String workspaceId, String folderId);
+    List<DmsDocument> findByWorkspaceIdAndNameContainingIgnoreCaseAndDeletedFalse(String workspaceId, String keyword);
+    List<DmsDocument> findByFolderIdAndNameContainingIgnoreCaseAndDeletedFalse(String folderId, String keyword);
 
 }
 

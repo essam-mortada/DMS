@@ -87,8 +87,33 @@ public class DocumentController {
         return ResponseEntity.ok(documentService.searchDocuments(keyword));
     }
 
+    @GetMapping("/workspace/{workspaceId}/search")
+    public List<DocumentDTO> searchByWorkspace(
+            @PathVariable String workspaceId,
+            @RequestParam String keyword) {
+        return documentService.searchInWorkspace(workspaceId, keyword);
+    }
+
+    @GetMapping("/folder/{folderId}/search")
+    public List<DocumentDTO> searchByFolder(
+            @PathVariable String folderId,
+            @RequestParam String keyword) {
+        return documentService.searchInFolder(folderId, keyword);
+    }
+
+
     @GetMapping("/sort")
     public ResponseEntity<List<DocumentDTO>> sort(@RequestParam String workspaceId, @RequestParam String sort) {
         return ResponseEntity.ok(documentService.sortDocuments(workspaceId, sort));
+    }
+
+    @GetMapping("/user/sort")
+    public ResponseEntity<List<DocumentDTO>> sortUser(@RequestParam String sort) {
+        return ResponseEntity.ok(documentService.sortDocumentsByOwner(sort));
+    }
+
+    @GetMapping("/folder/{folderId}/sort")
+    public ResponseEntity<List<DocumentDTO>> sortFolder(@PathVariable String folderId, @RequestParam String sort) {
+        return ResponseEntity.ok(documentService.sortDocumentsByFolder(folderId, sort));
     }
 }

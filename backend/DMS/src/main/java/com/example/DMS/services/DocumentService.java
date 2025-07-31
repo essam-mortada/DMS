@@ -149,10 +149,44 @@ public class DocumentService {
                 .collect(Collectors.toList());
     }
 
+    public List<DocumentDTO> searchInWorkspace(String workspaceId, String keyword) {
+        return documentRepository.findByWorkspaceIdAndNameContainingIgnoreCaseAndDeletedFalse(workspaceId, keyword)
+                .stream()
+                .map(documentMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<DocumentDTO> searchInFolder(String folderId, String keyword) {
+        return documentRepository.findByFolderIdAndNameContainingIgnoreCaseAndDeletedFalse(folderId, keyword)
+                .stream()
+                .map(documentMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
     public List<DocumentDTO> sortDocuments(String workspaceId, String sort) {
         Comparator<DmsDocument> comparator = buildComparator(sort);
 
         return documentRepository.findByWorkspaceIdAndDeletedFalse(workspaceId)
+                .stream()
+                .sorted(comparator)
+                .map(documentMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<DocumentDTO> sortDocumentsByOwner(String sort) {
+        Comparator<DmsDocument> comparator = buildComparator(sort);
+
+        return documentRepository.findByOwnerNidAndDeletedFalse(currentUserService.getCurrentUserNid())
+                .stream()
+                .sorted(comparator)
+                .map(documentMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<DocumentDTO> sortDocumentsByFolder(String folderId, String sort) {
+        Comparator<DmsDocument> comparator = buildComparator(sort);
+
+        return documentRepository.findByFolderIdAndDeletedFalse(folderId)
                 .stream()
                 .sorted(comparator)
                 .map(documentMapper::toDto)
