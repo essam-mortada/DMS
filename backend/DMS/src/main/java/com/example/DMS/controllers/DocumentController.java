@@ -54,6 +54,18 @@ public class DocumentController {
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("/{id}/restore")
+    @PreAuthorize("@sharingService.hasPermissionToDocument(#id, 'EDIT')")
+    public ResponseEntity<Void> restore(@PathVariable String id) {
+        documentService.restore(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/recycle-bin")
+    public ResponseEntity<List<DocumentDTO>> getDeleted() {
+        return ResponseEntity.ok(documentService.getDeletedDocuments());
+    }
+
     @GetMapping("/preview/{id}")
     @PreAuthorize("@sharingService.hasPermissionToDocument(#id, 'VIEW')")
     public ResponseEntity<String> preview(@PathVariable String id) throws IOException {

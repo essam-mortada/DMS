@@ -88,6 +88,24 @@ public class DocumentService {
         documentRepository.save(doc);
     }
 
+    public void restore(String id) {
+        if(documentRepository.findByOwnerNid(currentUserService.getCurrentUserNid()).stream().noneMatch(ws -> ws.getId().equals(id))){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have permission to restore this document");
+        }
+        DmsDocument doc = documentRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Document not found"));
+        doc.setDeleted(false);
+        documentRepository.save(doc);
+    }
+
+    public  List<DocumentDTO> getDeletedDocuments() {
+        String nid = currentUserService.getCurrentUserNid();
+        return documentRepository.findByOwnerNidAndDeletedTrue(nid)
+                .stream()
+                .map(documentMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
     public String previewDocument(String id) throws IOException {
         if(documentRepository.findByOwnerNid(currentUserService.getCurrentUserNid()).stream().noneMatch(ws -> ws.getId().equals(id))){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have permission to view this document");
