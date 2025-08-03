@@ -46,8 +46,9 @@ public class DocumentService {
         String storedFileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
         Path filePath = Paths.get("uploads").resolve(storedFileName);
         Files.createDirectories(filePath.getParent());
-        Files.write(filePath, file.getBytes());
-
+        try (var inputStream = file.getInputStream()) {
+            Files.copy(inputStream, filePath);
+        }
         DmsDocument document = DmsDocument.builder()
                 .name(StringUtils.hasText(meta.getName()) ? meta.getName() : file.getOriginalFilename())
                 .size(fileSize)
