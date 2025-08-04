@@ -4,10 +4,12 @@ import com.example.DMS.DTO.DocumentDTO;
 import com.example.DMS.DTO.UpdateDocumentMetadataRequest;
 import com.example.DMS.DTO.UploadDocumentRequest;
 import com.example.DMS.services.DocumentService;
+import com.example.DMS.services.HuggingFaceService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,7 +26,7 @@ public class DocumentController {
 
     private final DocumentService documentService;
     private final ObjectMapper objectMapper;
-
+    private final HuggingFaceService huggingFaceService;
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<DocumentDTO> uploadDocument(
@@ -132,5 +134,16 @@ public class DocumentController {
     @GetMapping("/folder/{folderId}/sort")
     public ResponseEntity<List<DocumentDTO>> sortFolder(@PathVariable String folderId, @RequestParam String sort) {
         return ResponseEntity.ok(documentService.sortDocumentsByFolder(folderId, sort));
+    }
+
+    @GetMapping("/{id}/summarize")
+    public ResponseEntity<String> summarizeDocument(@PathVariable String id) {
+        try {
+            String summary = huggingFaceService.summarizeDocumentById(id);
+            return ResponseEntity.ok(summary);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error summarizing document: " + e.getMessage());
+        }
     }
 }
